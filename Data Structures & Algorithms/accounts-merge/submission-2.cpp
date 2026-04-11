@@ -1,0 +1,77 @@
+/// Alhamdulillah
+#include <bits/stdc++.h>
+#include <string>
+#include <utility>
+#include <vector>
+using namespace std;
+
+class Solution {
+public:
+  struct Node {
+    string parent = "";
+    int rank = 0;
+  };
+
+  map<string, Node> node;
+  // map<string, int> mp;
+
+  string FindParent(string u) {
+    if (!node.count(u)) {
+      node[u].parent = u;
+      node[u].rank = 0;
+    }
+    if (node[u].parent == u)
+      return u;
+
+    return node[u].parent = FindParent(node[u].parent);
+  }
+
+  void Union(string u, string v) {
+    string pu = FindParent(u);
+    string pv = FindParent(v);
+    if (pu == pv)
+      return;
+
+    if (node[pu].rank == node[pv].rank)
+      node[u].rank++;
+
+    if (node[pu].rank < node[pv].rank)
+      swap(pu, pv);
+    node[pv].parent = pu;
+  }
+
+  vector<int> ans;
+
+  vector<vector<string>> accountsMerge(vector<vector<string>> &accounts) {
+    map<string, string> acntHolder;
+
+    for (int level = 0; level < accounts.size(); level++) {
+      auto x = accounts[level];
+
+      for (int i = 1; i < x.size(); i++) {
+        acntHolder[x[i]] = x[0];
+        Union(x[i], x[1]);
+      }
+    }
+
+    map<string, set<string>> group;
+    for (auto e : acntHolder) {
+      group[FindParent(e.first)].insert(e.first);
+    }
+
+    vector<vector<string>> ans;
+    for (auto &x : group) {
+      auto name = acntHolder[x.first];
+
+      vector<string> merged;
+      merged.emplace_back(name);
+      for (auto mail : x.second) {
+        merged.emplace_back(mail);
+      }
+      sort(merged.begin(), merged.end());
+      ans.push_back(merged);
+    }
+
+    return ans;
+  }
+};
